@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Feliz Cumpleaños, Mateo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f7f5f0;
+      color: #1a1a1a;
+      min-height: 100vh;
+    }
+
+    /* ── OVERLAY DE VERIFICACIÓN ── */
+    #verify-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 15, 15, 0.82);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    #verify-box {
+      background: #fff;
+      border: 0.5px solid #ccc;
+      border-radius: 3px;
+      max-width: 480px;
+      width: 100%;
+      padding: 36px 32px 32px;
+      animation: slideUp 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .verify-eyebrow {
+      font-size: 10px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: #aaa;
+      margin-bottom: 10px;
+    }
+
+    .verify-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: #1a1a1a;
+      margin-bottom: 6px;
+      line-height: 1.2;
+    }
+
+    .verify-subtitle {
+      font-size: 13px;
+      color: #888;
+      margin-bottom: 28px;
+      line-height: 1.6;
+    }
+
+    /* Barra de progreso de preguntas */
+    .verify-progress {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 28px;
+    }
+
+    .vp-bar {
+      flex: 1;
+      height: 3px;
+      background: #e8e8e6;
+      border-radius: 2px;
+      transition: background 0.4s ease;
+    }
+
+    .vp-bar.active   { background: #1a1a1a; }
+    .vp-bar.done     { background: #1a1a1a; }
+
+    /* Pregunta */
+    .verify-question-label {
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #bbb;
+      margin-bottom: 8px;
+    }
+
+    .verify-question-text {
+      font-family: 'Playfair Display', serif;
+      font-size: 17px;
+      color: #1a1a1a;
+      margin-bottom: 16px;
+      line-height: 1.45;
+    }
+
+    .verify-input {
+      width: 100%;
+      border: 0.5px solid #ccc;
+      border-radius: 2px;
+      padding: 11px 14px;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      background: #fafaf8;
+      color: #1a1a1a;
+      outline: none;
+      transition: border-color 0.2s;
+      margin-bottom: 10px;
+    }
+
+    .verify-input:focus { border-color: #1a1a1a; background: #fff; }
+
+    .verify-input.shake {
+      animation: shake 0.35s ease;
+      border-color: #c0392b !important;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%       { transform: translateX(-6px); }
+      40%       { transform: translateX(6px); }
+      60%       { transform: translateX(-4px); }
+      80%       { transform: translateX(4px); }
+    }
+
+    .verify-error {
+      font-size: 11px;
+      color: #c0392b;
+      margin-bottom: 10px;
+      min-height: 16px;
+      display: none;
+    }
+
+    .verify-btn {
+      width: 100%;
+      background: #1a1a1a;
+      color: #fff;
+      border: none;
+      border-radius: 2px;
+      padding: 12px;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      margin-top: 6px;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    .verify-btn:hover  { background: #333; }
+    .verify-btn:active { transform: scale(0.98); }
+
+    /* Pantalla de éxito */
+    .verify-success {
+      display: none;
+      text-align: center;
+      padding: 12px 0 4px;
+    }
+
+    .verify-success-icon {
+      font-size: 36px;
+      margin-bottom: 14px;
+    }
+
+    .verify-success-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: #1a1a1a;
+      margin-bottom: 8px;
+    }
+
+    .verify-success-text {
+      font-size: 13px;
+      color: #888;
+      line-height: 1.6;
+      margin-bottom: 22px;
+    }
+
+    .verify-enter-btn {
+      background: #1a1a1a;
+      color: #fff;
+      border: none;
+      border-radius: 2px;
+      padding: 12px 32px;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .verify-enter-btn:hover { background: #333; }
+
+    /* ── MASTHEAD ── */
+    .masthead {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 40px 24px 20px;
+      text-align: center;
+      border-bottom: 2.5px solid #1a1a1a;
+    }
+
+    .masthead-eyebrow {
+      font-size: 10px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: #888;
+      margin-bottom: 14px;
+    }
+
+    .masthead-name {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(42px, 10vw, 72px);
+      font-weight: 700;
+      line-height: 1.0;
+      color: #1a1a1a;
+    }
+
+    .masthead-name span {
+      display: block;
+      font-size: clamp(14px, 3vw, 20px);
+      font-weight: 400;
+      font-style: italic;
+      color: #555;
+      margin-top: 6px;
+      letter-spacing: 0.04em;
+    }
+
+    .masthead-rule {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 16px;
+      padding-top: 12px;
+      border-top: 0.5px solid #ccc;
+    }
+
+    .masthead-rule span {
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #999;
+    }
+
+    .masthead-rule::before,
+    .masthead-rule::after {
+      content: '';
+      flex: 1;
+      height: 0.5px;
+      background: #ccc;
+    }
+
+    /* ── PROGRESS DOTS ── */
+    .progress-bar {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 18px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 32px;
+      border-bottom: 0.5px solid #ddd;
+    }
+
+    .progress-step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .progress-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      border: 1.5px solid #1a1a1a;
+      background: transparent;
+      transition: background 0.4s ease;
+    }
+
+    .progress-dot.unlocked { background: #1a1a1a; }
+
+    .progress-label {
+      font-size: 9px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #bbb;
+    }
+
+    .progress-label.unlocked { color: #1a1a1a; }
+
+    /* ── MAIN CONTENT ── */
+    .content {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 32px 24px 60px;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    /* ── SECTION CARD ── */
+    .section-card {
+      background: #fff;
+      border: 0.5px solid #ccc;
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding: 16px 20px;
+      background: #fafaf8;
+      border-bottom: 0.5px solid #e8e8e8;
+      gap: 12px;
+    }
+
+    .section-meta {
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #aaa;
+      margin-bottom: 5px;
+    }
+
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: #1a1a1a;
+      line-height: 1.2;
+    }
+
+    .status-pill {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 5px 11px;
+      border-radius: 20px;
+      white-space: nowrap;
+      margin-top: 2px;
+    }
+
+    .status-locked {
+      color: #aaa;
+      background: #f2f2f0;
+      border: 0.5px solid #ddd;
+    }
+
+    .status-open {
+      color: #2d6a4a;
+      background: #eaf4ee;
+      border: 0.5px solid #b5d9c4;
+    }
+
+    .status-icon { font-size: 12px; }
+
+    /* ── BODY ── */
+    .section-body { padding: 22px 20px; }
+
+    /* ── CODE FORM ── */
+    .code-hint {
+      font-size: 12px;
+      color: #aaa;
+      font-style: italic;
+      margin-bottom: 10px;
+    }
+
+    .code-row { display: flex; gap: 8px; }
+
+    .code-input {
+      flex: 1;
+      border: 0.5px solid #ccc;
+      border-radius: 2px;
+      padding: 10px 14px;
+      font-family: 'Inter', monospace;
+      font-size: 14px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      background: #fafaf8;
+      color: #1a1a1a;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .code-input:focus { border-color: #1a1a1a; background: #fff; }
+
+    .code-input.shake {
+      animation: shake 0.35s ease;
+      border-color: #c0392b !important;
+    }
+
+    .unlock-btn {
+      background: #1a1a1a;
+      color: #fff;
+      border: none;
+      border-radius: 2px;
+      padding: 10px 20px;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    .unlock-btn:hover  { background: #333; }
+    .unlock-btn:active { transform: scale(0.97); }
+
+    .error-msg {
+      font-size: 11px;
+      color: #c0392b;
+      margin-top: 8px;
+      display: none;
+    }
+
+    /* ── ENVELOPE REVEAL ── */
+    .envelope-content { display: none; }
+
+    .envelope-content.open {
+      display: block;
+      animation: openEnvelope 0.65s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    @keyframes openEnvelope {
+      from { opacity: 0; transform: translateY(-12px) scaleY(0.95); transform-origin: top center; }
+      to   { opacity: 1; transform: translateY(0) scaleY(1); }
+    }
+
+    /* ── MESSAGE ── */
+    .message-block {
+      border-left: 2px solid #1a1a1a;
+      padding-left: 16px;
+      margin-bottom: 20px;
+    }
+
+    .message-label {
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #bbb;
+      margin-bottom: 8px;
+    }
+
+    .message-text {
+      font-family: 'Playfair Display', serif;
+      font-size: 15px;
+      line-height: 1.85;
+      color: #2a2a2a;
+      font-style: italic;
+    }
+
+    /* ── PHOTO GRID ── */
+    .photo-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      margin-top: 4px;
+    }
+
+    .photo-slot {
+      aspect-ratio: 1 / 1;
+      overflow: hidden;
+      border-radius: 1px;
+      border: 0.5px solid #e0e0e0;
+      background: #f0ede6;
+    }
+
+    .photo-slot img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+    .photo-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      color: #c0bbb2;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+    }
+
+    .photo-placeholder svg {
+      width: 22px;
+      height: 22px;
+      stroke: #c0bbb2;
+      fill: none;
+      stroke-width: 1.4;
+      stroke-linecap: round;
+    }
+
+    /* ── VIDEO BLOCK ── */
+    .video-block {
+      margin-top: 4px;
+      border: 0.5px solid #ddd;
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .video-block iframe { width: 100%; aspect-ratio: 16 / 9; display: block; border: none; }
+
+    .video-placeholder {
+      aspect-ratio: 16 / 9;
+      background: #f0ede6;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      color: #bbb;
+    }
+
+    .video-placeholder svg {
+      width: 40px;
+      height: 40px;
+      stroke: #ccc;
+      fill: none;
+      stroke-width: 1.2;
+      stroke-linecap: round;
+    }
+
+    .video-placeholder span {
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    /* ── FOOTER ── */
+    .page-footer {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 0 24px 40px;
+      text-align: center;
+    }
+
+    .footer-rule { height: 0.5px; background: #ccc; margin-bottom: 16px; }
+
+    .footer-text { font-size: 11px; color: #bbb; letter-spacing: 0.1em; }
+
+    /* ── SEPARATOR ── */
+    .separator { text-align: center; font-size: 11px; color: #ccc; letter-spacing: 0.15em; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 480px) {
+      .masthead { padding: 28px 16px 16px; }
+      .content  { padding: 24px 16px 48px; }
+      .section-head  { flex-direction: column; align-items: flex-start; }
+      .photo-grid { grid-template-columns: repeat(2, 1fr); }
+      #verify-box { padding: 28px 20px 24px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ══════════════════════════════════════════
+       VENTANA DE VERIFICACIÓN DE IDENTIDAD
+       ══════════════════════════════════════════ -->
+  <div id="verify-overlay">
+    <div id="verify-box">
+
+      <!-- Formulario de preguntas -->
+      <div id="verify-form">
+        <p class="verify-eyebrow">Verificación de identidad</p>
+        <h2 class="verify-title">¿Eres tú, Mateo?</h2>
+        <p class="verify-subtitle">Responde las tres preguntas para acceder a tu regalo de cumpleaños.</p>
+
+        <!-- Barras de progreso -->
+        <div class="verify-progress">
+          <div class="vp-bar active"  id="vbar1"></div>
+          <div class="vp-bar"         id="vbar2"></div>
+          <div class="vp-bar"         id="vbar3"></div>
+        </div>
+
+        <!-- Pregunta 1 -->
+        <div class="verify-step" id="vstep1">
+          <p class="verify-question-label">Pregunta 1 de 3</p>
+          <!-- ✏️ CAMBIA ESTA PREGUNTA -->
+          <p class="verify-question-text">¿En qué ciudad naciste?</p>
+          <input class="verify-input" id="vinput1" placeholder="Tu respuesta..." autocomplete="off" />
+          <p class="verify-error" id="verr1">Respuesta incorrecta, intenta de nuevo.</p>
+          <button class="verify-btn" onclick="verifyStep(1)">Continuar →</button>
+        </div>
+
+        <!-- Pregunta 2 (oculta inicialmente) -->
+        <div class="verify-step" id="vstep2" style="display:none;">
+          <p class="verify-question-label">Pregunta 2 de 3</p>
+          <!-- ✏️ CAMBIA ESTA PREGUNTA -->
+          <p class="verify-question-text">¿Cuál es el nombre de tu mascota?</p>
+          <input class="verify-input" id="vinput2" placeholder="Tu respuesta..." autocomplete="off" />
+          <p class="verify-error" id="verr2">Respuesta incorrecta, intenta de nuevo.</p>
+          <button class="verify-btn" onclick="verifyStep(2)">Continuar →</button>
+        </div>
+
+        <!-- Pregunta 3 (oculta inicialmente) -->
+        <div class="verify-step" id="vstep3" style="display:none;">
+          <p class="verify-question-label">Pregunta 3 de 3</p>
+          <!-- ✏️ CAMBIA ESTA PREGUNTA -->
+          <p class="verify-question-text">¿Cuál fue la primera canción que bailamos juntos?</p>
+          <input class="verify-input" id="vinput3" placeholder="Tu respuesta..." autocomplete="off" />
+          <p class="verify-error" id="verr3">Respuesta incorrecta, intenta de nuevo.</p>
+          <button class="verify-btn" onclick="verifyStep(3)">Ver mi regalo 🎁</button>
+        </div>
+      </div>
+
+      <!-- Pantalla de éxito -->
+      <div class="verify-success" id="verify-success">
+        <div class="verify-success-icon">🎂</div>
+        <p class="verify-success-title">¡Eres tú, Mateo!</p>
+        <p class="verify-success-text">Feliz cumpleaños. Hoy preparé algo muy especial para ti.<br>Espero que cada sección te llene el corazón.</p>
+        <button class="verify-enter-btn" onclick="enterPage()">Abrir mis regalos ✉️</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       PÁGINA PRINCIPAL (se ve al pasar verificación)
+       ══════════════════════════════════════════ -->
+
+  <!-- ── MASTHEAD ── -->
+  <header class="masthead">
+    <p class="masthead-eyebrow">Edición especial · 22 de junio de 2025</p>
+    <h1 class="masthead-name">
+      Feliz Cumpleaños
+      <span>Mateo</span>
+    </h1>
+    <div class="masthead-rule">
+      <span>3 sorpresas esperan por ti hoy · desbloquea cada una con tu regalo</span>
+    </div>
+  </header>
+
+  <!-- ── PROGRESS ── -->
+  <nav class="progress-bar" aria-label="Progreso de regalos">
+    <div class="progress-step">
+      <div class="progress-dot" id="dot1"></div>
+      <div class="progress-label" id="lbl1">Mañana</div>
+    </div>
+    <div class="progress-step">
+      <div class="progress-dot" id="dot2"></div>
+      <div class="progress-label" id="lbl2">Tarde</div>
+    </div>
+    <div class="progress-step">
+      <div class="progress-dot" id="dot3"></div>
+      <div class="progress-label" id="lbl3">Noche</div>
+    </div>
+  </nav>
+
+  <!-- ── SECTIONS ── -->
+  <main class="content">
+
+    <!-- ══ REGALO I ══ -->
+    <article class="section-card" id="card1">
+      <div class="section-head">
+        <div>
+          <div class="section-meta">Regalo I · Mañana</div>
+          <h2 class="section-title">El comienzo del día</h2>
+        </div>
+        <div class="status-pill status-locked" id="badge1">
+          <span class="status-icon">🔒</span> Bloqueado
+        </div>
+      </div>
+      <div class="section-body">
+        <div class="envelope-content" id="content1">
+          <div class="message-block">
+            <div class="message-label">Para Mateo</div>
+            <p class="message-text">
+              Escribe aquí tu mensaje especial para la mañana.
+              Puedes hablar de por qué amas este momento del día a su lado,
+              un recuerdo especial, o simplemente lo feliz que te hace que exista.
+            </p>
+          </div>
+          <div class="photo-grid">
+            <div class="photo-slot">
+              <div class="photo-placeholder">
+                <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                Foto 1
+              </div>
+            </div>
+            <div class="photo-slot">
+              <div class="photo-placeholder">
+                <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                Foto 2
+              </div>
+            </div>
+            <div class="photo-slot">
+              <div class="photo-placeholder">
+                <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                Foto 3
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="form1">
+          <p class="code-hint">Ingresa el código del primer regalo para abrir esta sección ✉️</p>
+          <div class="code-row">
+            <input class="code-input" id="input1" placeholder="CÓDIGO" maxlength="12" autocomplete="off" />
+            <button class="unlock-btn" onclick="tryUnlock(1)">Abrir</button>
+          </div>
+          <p class="error-msg" id="err1">Código incorrecto, intenta de nuevo.</p>
+        </div>
+      </div>
+    </article>
+
+    <div class="separator">· · ·</div>
+
+    <!-- ══ REGALO II ══ -->
+    <article class="section-card" id="card2">
+      <div class="section-head">
+        <div>
+          <div class="section-meta">Regalo II · Tarde</div>
+          <h2 class="section-title">Lo que más amo de ti</h2>
+        </div>
+        <div class="status-pill status-locked" id="badge2">
+          <span class="status-icon">🔒</span> Bloqueado
+        </div>
+      </div>
+      <div class="section-body">
+        <div class="envelope-content" id="content2">
+          <div class="message-block">
+            <div class="message-label">Para Mateo</div>
+            <p class="message-text">
+              Escribe aquí tu mensaje especial para la tarde.
+              Puedes hablar de sus cualidades, cosas que admiras de él,
+              o momentos que han vivido juntos que atesoras profundamente.
+            </p>
+          </div>
+          <div class="photo-grid">
+            <div class="photo-slot">
+              <div class="photo-placeholder">
+                <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                Foto 4
+              </div>
+            </div>
+            <div class="photo-slot">
+              <div class="photo-placeholder">
+                <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                Foto 5
+              </div>
+            </div>
+            <div class="photo-slot">
+              <div class="photo-placeholder">
+                <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                Foto 6
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="form2">
+          <p class="code-hint">Ingresa el código del segundo regalo para abrir esta sección ✉️</p>
+          <div class="code-row">
+            <input class="code-input" id="input2" placeholder="CÓDIGO" maxlength="12" autocomplete="off" />
+            <button class="unlock-btn" onclick="tryUnlock(2)">Abrir</button>
+          </div>
+          <p class="error-msg" id="err2">Código incorrecto, intenta de nuevo.</p>
+        </div>
+      </div>
+    </article>
+
+    <div class="separator">· · ·</div>
+
+    <!-- ══ REGALO III ══ -->
+    <article class="section-card" id="card3">
+      <div class="section-head">
+        <div>
+          <div class="section-meta">Regalo III · Noche</div>
+          <h2 class="section-title">Para cerrar este día</h2>
+        </div>
+        <div class="status-pill status-locked" id="badge3">
+          <span class="status-icon">🔒</span> Bloqueado
+        </div>
+      </div>
+      <div class="section-body">
+        <div class="envelope-content" id="content3">
+          <div class="message-block">
+            <div class="message-label">Para Mateo</div>
+            <p class="message-text">
+              Escribe aquí tu mensaje final, el más especial.
+              Cuéntale lo mucho que significa para ti y lo que deseas
+              para su nuevo año de vida.
+            </p>
+          </div>
+          <div class="video-block">
+            <div class="video-placeholder">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+              <span>Tu video va aquí</span>
+            </div>
+          </div>
+        </div>
+        <div id="form3">
+          <p class="code-hint">Ingresa el código del tercer regalo para abrir esta sección ✉️</p>
+          <div class="code-row">
+            <input class="code-input" id="input3" placeholder="CÓDIGO" maxlength="12" autocomplete="off" />
+            <button class="unlock-btn" onclick="tryUnlock(3)">Abrir</button>
+          </div>
+          <p class="error-msg" id="err3">Código incorrecto, intenta de nuevo.</p>
+        </div>
+      </div>
+    </article>
+
+  </main>
+
+  <!-- ── FOOTER ── -->
+  <footer class="page-footer">
+    <div class="footer-rule"></div>
+    <p class="footer-text">Hecho con amor · 22 de junio de 2025</p>
+  </footer>
+
+  <script>
+    // ══════════════════════════════════════════════════════
+    // ✏️  RESPUESTAS DE VERIFICACIÓN
+    //     Escribe aquí las respuestas correctas.
+    //     No importan mayúsculas ni tildes (se normalizan).
+    // ══════════════════════════════════════════════════════
+    const VERIFY_ANSWERS = {
+      1: 'medellín',   // ← respuesta a la pregunta 1
+      2: 'luna',       // ← respuesta a la pregunta 2
+      3: 'perfect'     // ← respuesta a la pregunta 3
+    };
+
+    // ══════════════════════════════════════════════════════
+    // ✏️  CÓDIGOS SECRETOS DE LOS REGALOS
+    // ══════════════════════════════════════════════════════
+    const CODES = {
+      1: 'CODIGO1',
+      2: 'CODIGO2',
+      3: 'CODIGO3'
+    };
+
+    // ── Normaliza texto: minúsculas, sin tildes, sin espacios extra ──
+    function normalize(str) {
+      return str.trim().toLowerCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    }
+
+    let currentStep = 1;
+
+    function verifyStep(num) {
+      const input  = document.getElementById('vinput' + num);
+      const err    = document.getElementById('verr'   + num);
+      const answer = normalize(input.value);
+      const correct = normalize(VERIFY_ANSWERS[num]);
+
+      if (answer === correct) {
+        err.style.display = 'none';
+
+        // Marcar barra como completada
+        document.getElementById('vbar' + num).classList.add('done');
+
+        if (num < 3) {
+          // Pasar a la siguiente pregunta
+          document.getElementById('vstep' + num).style.display = 'none';
+          document.getElementById('vstep' + (num + 1)).style.display = 'block';
+          document.getElementById('vbar' + (num + 1)).classList.add('active');
+          document.getElementById('vinput' + (num + 1)).focus();
+          currentStep = num + 1;
+        } else {
+          // Todas correctas → mostrar éxito
+          document.getElementById('verify-form').style.display    = 'none';
+          document.getElementById('verify-success').style.display = 'block';
+        }
+      } else {
+        err.style.display = 'block';
+        input.classList.add('shake');
+        setTimeout(() => input.classList.remove('shake'), 400);
+        input.value = '';
+        input.focus();
+      }
+    }
+
+    function enterPage() {
+      const overlay = document.getElementById('verify-overlay');
+      overlay.style.transition = 'opacity 0.5s ease';
+      overlay.style.opacity = '0';
+      setTimeout(() => overlay.style.display = 'none', 500);
+    }
+
+    // Permitir Enter en los campos de verificación
+    [1, 2, 3].forEach(n => {
+      document.getElementById('vinput' + n).addEventListener('keydown', e => {
+        if (e.key === 'Enter') verifyStep(n);
+      });
+    });
+
+    // ── Regalos (códigos secretos) ──
+    function tryUnlock(num) {
+      const input   = document.getElementById('input'   + num);
+      const err     = document.getElementById('err'     + num);
+      const form    = document.getElementById('form'    + num);
+      const content = document.getElementById('content' + num);
+      const badge   = document.getElementById('badge'   + num);
+      const dot     = document.getElementById('dot'     + num);
+      const lbl     = document.getElementById('lbl'     + num);
+
+      const entered = input.value.trim().toUpperCase();
+      const correct = CODES[num].toUpperCase();
+
+      if (entered === correct) {
+        form.style.display = 'none';
+        content.classList.add('open');
+        badge.className  = 'status-pill status-open';
+        badge.innerHTML  = '<span class="status-icon">✉️</span> Abierto';
+        dot.classList.add('unlocked');
+        lbl.classList.add('unlocked');
+        err.style.display = 'none';
+      } else {
+        err.style.display = 'block';
+        input.classList.add('shake');
+        setTimeout(() => input.classList.remove('shake'), 400);
+      }
+    }
+
+    [1, 2, 3].forEach(n => {
+      document.getElementById('input' + n).addEventListener('keydown', e => {
+        if (e.key === 'Enter') tryUnlock(n);
+      });
+    });
+  </script>
+
+</body>
+</html>
