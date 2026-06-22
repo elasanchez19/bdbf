@@ -578,8 +578,8 @@
       <!-- Formulario de preguntas -->
       <div id="verify-form">
         <p class="verify-eyebrow">Verificación de identidad</p>
-        <h2 class="verify-title">¿Eres tú, Mateo?</h2>
-        <p class="verify-subtitle">Responde las tres preguntas para acceder a tu regalo de cumpleaños.</p>
+        <h2 class="verify-title">¿Eres Mateo? Este sitio web es solo para el</h2>
+        <p class="verify-subtitle">Responde las siguientes tres preguntas para acceder a tu sorpresa.</p>
 
         <!-- Barras de progreso -->
         <div class="verify-progress">
@@ -602,7 +602,7 @@
         <div class="verify-step" id="vstep2" style="display:none;">
           <p class="verify-question-label">Pregunta 2 de 3</p>
           <!-- ✏️ CAMBIA ESTA PREGUNTA -->
-          <p class="verify-question-text">¿Cuál es el nombre de tu mascota?</p>
+          <p class="verify-question-text">¿Qué estas estudiando?</p>
           <input class="verify-input" id="vinput2" placeholder="Tu respuesta..." autocomplete="off" />
           <p class="verify-error" id="verr2">Respuesta incorrecta, intenta de nuevo.</p>
           <button class="verify-btn" onclick="verifyStep(2)">Continuar →</button>
@@ -612,7 +612,7 @@
         <div class="verify-step" id="vstep3" style="display:none;">
           <p class="verify-question-label">Pregunta 3 de 3</p>
           <!-- ✏️ CAMBIA ESTA PREGUNTA -->
-          <p class="verify-question-text">¿Cuál fue la primera canción que bailamos juntos?</p>
+          <p class="verify-question-text">¿Cuál fue el último municipio que visitaste con tu novia?</p>
           <input class="verify-input" id="vinput3" placeholder="Tu respuesta..." autocomplete="off" />
           <p class="verify-error" id="verr3">Respuesta incorrecta, intenta de nuevo.</p>
           <button class="verify-btn" onclick="verifyStep(3)">Ver mi regalo 🎁</button>
@@ -829,16 +829,16 @@
     //     No importan mayúsculas ni tildes (se normalizan).
     // ══════════════════════════════════════════════════════
     const VERIFY_ANSWERS = {
-      1: 'medellín',   // ← respuesta a la pregunta 1
-      2: 'luna',       // ← respuesta a la pregunta 2
-      3: 'perfect'     // ← respuesta a la pregunta 3
+      1: 'itagui',   // ← respuesta a la pregunta 1
+      2: 'biologia',       // ← respuesta a la pregunta 2
+      3: 'jardin'     // ← respuesta a la pregunta 3
     };
 
     // ══════════════════════════════════════════════════════
     // ✏️  CÓDIGOS SECRETOS DE LOS REGALOS
     // ══════════════════════════════════════════════════════
     const CODES = {
-      1: 'CODIGO1',
+      1: 'mi_cielito',
       2: 'CODIGO2',
       3: 'CODIGO3'
     };
